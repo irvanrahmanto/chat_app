@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const socketio = require('socket.io');
+const Filter = require('bad-words');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,13 +25,24 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('message', 'A new user has been joined!');
 
     // sending message
-    socket.on('sendMessage', (message) => {
+    socket.on('sendMessage', (message, callback) => {
+        // checking bad words
+        const filter = new Filter();
+
+        if (filter.isProfane(message)) {
+            return callback('profanity is not allowed!');
+        }
+
         io.emit('message', message);
+        // for using acknowledgement
+        // callback('Delivered');
+        callback();
     });
 
     // sending current location, get latitude and longitude from geolocation api and sending that api to google maps
-    socket.on('sendLocation', (coords) => {
-        io.emit('message', `https://google.com/maps?q=${coords.latitude},${coords.longitude}`);
+    socket.on('sendLocation', (coords, callback) => {
+        io.emit('locationMessage', `https://google.com/maps?q=${coords.latitude},${coords.longitude}`);
+        callback();
     })
 
     // If user left joined
