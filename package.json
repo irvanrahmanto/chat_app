@@ -6,6 +6,7 @@
   "dependencies": {
     "ansi-align": "^3.0.0",
     "anymatch": "^3.1.1",
+    "bad-words": "^3.0.3",
     "braces": "^3.0.2",
     "clone-response": "^1.0.2",
     "debug": "^2.6.9",
