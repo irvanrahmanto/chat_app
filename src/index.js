@@ -33,14 +33,16 @@ io.on('connection', (socket) => {
         socket.join(user.room)
 
         // If user succes joined 
-        socket.emit('message', generateMessage('welcome!'));
-        socket.broadcast.to(user.room).emit('message', generateMessage(`${user.username} has joined!`));
+        socket.emit('message', generateMessage('Admin', 'welcome!'));
+        socket.broadcast.to(user.room).emit('message', generateMessage('Admin', `${user.username} has joined!`));
 
         callback()
     })
 
     // sending message
     socket.on('sendMessage', (message, callback) => {
+        const user = getUser(socket.id);
+
         // checking bad words
         const filter = new Filter();
 
@@ -48,7 +50,7 @@ io.on('connection', (socket) => {
             return callback('profanity is not allowed!');
         }
 
-        io.emit('message', generateMessage(message));
+        io.to(user.room).emit('message', generateMessage(user.username, message));
         // for using acknowledgement
         // callback('Delivered');
         callback();
@@ -56,7 +58,8 @@ io.on('connection', (socket) => {
 
     // sending current location, get latitude and longitude from geolocation api and sending that api to google maps
     socket.on('sendLocation', (coords, callback) => {
-        io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?q=${coords.latitude},${coords.longitude}`));
+        const user = getUser(socket.id);
+        io.to(user.room).emit('locationMessage', generateLocationMessage(user.username, `https://google.com/maps?q=${coords.latitude},${coords.longitude}`));
         callback();
     })
 
@@ -65,7 +68,7 @@ io.on('connection', (socket) => {
         const user = removeUser(socket.id)
 
         if (user) {
-            io.to(user.room).emit('message', generateMessage(`${user.username} user has left!`));
+            io.to(user.room).emit('message', generateMessage('Admin', `${user.username} user has left!`));
         }
         // io.emit('message', generateMessage('a user has left!'));
     })
